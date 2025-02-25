@@ -187,25 +187,43 @@ def select_subject():
     cursor = conn.cursor()
     cursor.execute('SELECT name FROM subjects WHERE id = ?', (subject_id,))
     subject = cursor.fetchone()
-    conn.close()
     
     if not subject:
+        conn.close()
         return jsonify({'error': 'Asignatura no encontrada'}), 404
+    
+    # Guardar el ID de la asignatura en la sesión
+    session['subject_id'] = int(subject_id)
+    print(f"Subject ID guardado en sesión: {session['subject_id']}")
+    
+    # Contar cuántas preguntas tiene esta asignatura
+    cursor.execute('SELECT COUNT(*) FROM questions WHERE subject_id = ?', (subject_id,))
+    question_count = cursor.fetchone()[0]
+    print(f"La asignatura tiene {question_count} preguntas")
+    
+    conn.close()
     
     return jsonify({
         'success': True,
-        'asignatura': subject[0]
+        'asignatura': subject[0],
+        'num_questions': question_count
     })
 
 @app.route('/get_questions', methods=['GET'])
 def get_questions():
     if 'subject_id' not in session:
+        print("Error: No hay asignatura seleccionada en la sesión")
         return jsonify({'error': 'No hay asignatura seleccionada'}), 400
     
     subject_id = session['subject_id']
-    num_questions = request.args.get('num_questions', 10, type=int)
-    only_failed = request.args.get('only_failed', 'false') == 'true'
-    only_new = request.args.get('only_new', 'false') == 'true'
+    print(f"Obteniendo preguntas para subject_id: {subject_id}")
+    
+    num_questions = int(request.args.get('num_questions', 10))  # Este valor se está recibiendo bien
+    only_failed = request.args.get('only_failed') == 'true'
+    only_new = request.args.get('only_new') == 'true'
+    
+    # Debug para verificar
+    print(f"Solicitando {num_questions} preguntas, only_failed={only_failed}, only_new={only_new}")
     
     conn = get_db()
     cursor = conn.cursor()
@@ -238,55 +256,64 @@ def get_questions():
         )
         '''
     
-    # Ordenar aleatoriamente y limitar
-    query += 'ORDER BY RANDOM() LIMIT ?'
-    params.append(num_questions)
+    # Ejecutar consulta primero para comprobar cuántas preguntas hay disponibles
+    total_query = f"SELECT COUNT(*) FROM ({query}) AS subquery"
+    cursor.execute(total_query, params)
+    total_available = cursor.fetchone()[0]
     
-    cursor.execute(query, params)
-    questions_rows = cursor.fetchall()
+    print(f"Total de preguntas disponibles: {total_available}")
     
-    # Obtener respuestas para cada pregunta
+    # Ajustar num_questions si es necesario
+    if num_questions > total_available:
+        num_questions = total_available
+        print(f"Ajustando a {num_questions} preguntas disponibles")
+    
+    # Ejecutar la consulta con LIMIT
+    cursor.execute(query + ' ORDER BY RANDOM() LIMIT ?', params + [num_questions])
+    
+    # Obtener preguntas
+    results = cursor.fetchall()
+    print(f"Preguntas recuperadas: {len(results)}")
+    
+    # Si no hay suficientes preguntas, mostrar mensaje
+    if len(results) < 1:
+        conn.close()
+        return jsonify({'message': 'No hay preguntas disponibles con los filtros seleccionados'})
+    
+    # Guardar las preguntas en sesión
     questions = []
-    question_ids = []  # Lista para almacenar las IDs de las preguntas
+    question_ids = []
     
-    for row in questions_rows:
-        question_id, question_text, correct_answer = row
-        
-        # Añadir ID a la lista
-        question_ids.append(question_id)
+    for row in results:
+        question_id = row[0]
+        question_text = row[1]
+        correct_answer = row[2]
         
         # Obtener todas las respuestas para esta pregunta
         cursor.execute(
-            'SELECT answer_text FROM answers WHERE question_id = ?',
+            'SELECT answer_text FROM answers WHERE question_id = ? ORDER BY RANDOM()',
             (question_id,)
         )
         
-        answer_rows = cursor.fetchall()
-        answers = [a[0] for a in answer_rows]
+        answers = [a[0] for a in cursor.fetchall()]
         
-        # Si no hay suficientes respuestas, continuar con la siguiente pregunta
-        if len(answers) < 2:
-            continue
-        
-        # Asegurarse de que la respuesta correcta esté en la lista
-        if correct_answer not in answers:
-            answers.append(correct_answer)
-        
+        # Añadir pregunta al resultado
         questions.append({
             'id': question_id,
             'question_text': question_text,
-            'answers': answers,
-            'correct_answer': correct_answer
+            'correct_answer': correct_answer,
+            'answers': answers
         })
+        
+        question_ids.append(question_id)
     
-    # Guardar las IDs de las preguntas en la sesión
+    # Guardar IDs de preguntas en sesión
     session['current_quiz_questions'] = question_ids
     
     conn.close()
     
-    return jsonify({
-        'questions': questions
-    })
+    print(f"Enviando {len(questions)} preguntas al cliente")
+    return jsonify({'questions': questions})
 
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
@@ -502,15 +529,27 @@ def get_stats():
         wrong_answer_penalty = config[1]
         no_answer_penalty = config[2]
     
-    # Calcular puntuación
-    score = (correct_answers * question_value) - (incorrect_answers * wrong_answer_penalty) - (unanswered_questions * no_answer_penalty)
+    # Calcular puntuación base
+    raw_score = (correct_answers * question_value) - (incorrect_answers * wrong_answer_penalty) - (unanswered_questions * no_answer_penalty)
+    
+    # Convertir a escala 0-10
+    max_possible_score = total_questions * question_value
+    if max_possible_score > 0:
+        score = (raw_score / max_possible_score) * 10
+    else:
+        score = 0
+    
+    # Asegurar que la puntuación esté entre 0 y 10
+    score = max(0, min(10, score))
     
     print("Stats from DB:", {
         'total_questions': total_questions,
         'answered_questions': answered_questions,
         'correct_answers': correct_answers,
         'incorrect_answers': incorrect_answers,
-        'unanswered_questions': unanswered_questions
+        'unanswered_questions': unanswered_questions,
+        'raw_score': raw_score,
+        'normalized_score': score
     })
     
     conn.close()
@@ -520,7 +559,7 @@ def get_stats():
         'correct_answers': correct_answers,
         'incorrect_answers': incorrect_answers,
         'unanswered_questions': unanswered_questions,
-        'score': score,
+        'score': round(score, 2),  # Redondear a 2 decimales
         'config': {
             'question_value': question_value,
             'wrong_answer_penalty': wrong_answer_penalty,

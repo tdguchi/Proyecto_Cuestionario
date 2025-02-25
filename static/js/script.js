@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const configSection = document.getElementById('config-section');
     const quizTitle = document.getElementById('quiz-title');
     const questionsContainer = document.getElementById('questions-container');
-    const questionCounter = document.getElementById('question-counter');
     const startQuizBtn = document.getElementById('start-quiz');
     const submitQuizBtn = document.getElementById('submit-quiz');
     const newQuizBtn = document.getElementById('new-quiz');
@@ -223,9 +222,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Evento para iniciar el cuestionario
     startQuizBtn.addEventListener('click', function() {
-        const numQuestions = document.getElementById('num-questions').value;
+        // Obtener el valor exacto que introdujo el usuario
+        const numQuestions = parseInt(document.getElementById('num-questions').value);
         const onlyFailed = document.getElementById('only-failed').checked;
         const onlyNew = document.getElementById('only-new').checked;
+        
+        // Validación para asegurar que el valor es positivo y no excede las preguntas disponibles
+        if (isNaN(numQuestions) || numQuestions <= 0) {
+            showNotification('error', 'Por favor, introduce un número válido de preguntas');
+            return;
+        }
         
         // Mostrar indicador de carga
         questionsContainer.innerHTML = '<div class="text-center p-5"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-3">Cargando preguntas...</p></div>';
@@ -235,79 +241,44 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({})
         })
-        .then(response => response.json())
         .then(() => {
-            // Luego obtener las preguntas
+            // Asegurarse de que el parámetro num_questions se pasa correctamente como un número
             return fetch(`/get_questions?num_questions=${numQuestions}&only_failed=${onlyFailed}&only_new=${onlyNew}`);
         })
         .then(response => response.json())
         .then(data => {
+            // Depuración para verificar la respuesta del servidor
+            console.log("Preguntas solicitadas:", numQuestions);
+            console.log("Preguntas recibidas:", data.questions ? data.questions.length : 0);
+            
             if (data.questions && data.questions.length > 0) {
-                // Guardar preguntas actuales
-                currentQuestions = data.questions;
-                userAnswers = {};
+                // Crear las preguntas
+                createQuizQuestions(data.questions);
                 
-                // Limpiar contenedor de preguntas
-                questionsContainer.innerHTML = '';
+                // Mostrar notificación si se recibieron menos preguntas de las solicitadas
+                if (data.questions.length < numQuestions) {
+                    showNotification('warning', `Solo se han encontrado ${data.questions.length} preguntas disponibles con los criterios seleccionados.`);
+                }
                 
-                // Actualizar contador de preguntas
-                questionCounter.textContent = `0/${currentQuestions.length}`;
-                
-                // Crear tarjetas de preguntas
-                currentQuestions.forEach((question, index) => {
-                    const template = document.getElementById('question-template');
-                    const clone = document.importNode(template.content, true);
-                    
-                    const card = clone.querySelector('.question-card');
-                    card.dataset.id = question.id;
-                    
-                    const questionText = card.querySelector('.question-text');
-                    questionText.textContent = `${index + 1}. ${question.question_text}`;
-                    
-                    const answersContainer = card.querySelector('.answers-container');
-                    
-                    // Crear opciones de respuesta
-                    question.answers.forEach(answer => {
-                        const answerOption = document.createElement('div');
-                        answerOption.className = 'answer-option';
-                        answerOption.textContent = answer;
-                        answerOption.dataset.answer = answer;
-                        
-                        answerOption.addEventListener('click', function() {
-                            // Desmarcar otras opciones en la misma pregunta
-                            const options = card.querySelectorAll('.answer-option');
-                            options.forEach(opt => opt.classList.remove('selected'));
-                            
-                            // Marcar esta opción
-                            this.classList.add('selected');
-                            
-                            // Guardar respuesta
-                            userAnswers[question.id] = answer;
-                            
-                            // Actualizar contador
-                            const answeredCount = Object.keys(userAnswers).length;
-                            questionCounter.textContent = `${answeredCount}/${currentQuestions.length}`;
-                        });
-                        
-                        answersContainer.appendChild(answerOption);
-                    });
-                    
-                    questionsContainer.appendChild(card);
-                });
-                
-                // Cambiar a la pestaña de cuestionario
+                // Habilitar la pestaña de cuestionario
                 quizTab.removeAttribute('disabled');
                 quizTabInstance.show();
+                
+                // Mostrar el navegador de preguntas
+                const navigatorPanel = document.getElementById('question-navigator');
+                if (navigatorPanel) {
+                    navigatorPanel.style.display = 'block';
+                }
             } else {
                 questionsContainer.innerHTML = '';
-                showNotification('error', 'No hay preguntas disponibles con los filtros seleccionados');
+                showNotification('error', 'No hay preguntas disponibles con los criterios seleccionados');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            questionsContainer.innerHTML = '';
             showNotification('error', 'Error al obtener preguntas');
         });
     });
@@ -464,9 +435,156 @@ document.addEventListener('DOMContentLoaded', function() {
         const wrongPenalty = parseFloat(document.getElementById('wrong-answer-penalty').value) || 0.25;
         const noAnswerPenalty = parseFloat(document.getElementById('no-answer-penalty').value) || 0.0;
         
-        let score = (correct * questionValue) - (incorrect * wrongPenalty) - (unanswered * noAnswerPenalty);
+        // Calcular puntuación base
+        let rawScore = (correct * questionValue) - (incorrect * wrongPenalty) - (unanswered * noAnswerPenalty);
         
-        // Asegurar que la puntuación no sea negativa
-        return Math.max(0, score).toFixed(2);
+        // Convertir a escala 0-10
+        const totalQuestions = correct + incorrect + unanswered;
+        const maxPossibleScore = totalQuestions * questionValue;
+        
+        let score = 0;
+        if (maxPossibleScore > 0) {
+            score = (rawScore / maxPossibleScore) * 10;
+        }
+        
+        // Asegurar que la puntuación esté entre 0 y 10
+        score = Math.max(0, Math.min(10, score));
+        
+        return score.toFixed(2);
+    }
+
+    // Modificar la función initQuestionNavigator para el nuevo diseño
+    function initQuestionNavigator() {
+        const questionGrid = document.getElementById('question-grid');
+        const toggleNavigator = document.getElementById('toggle-navigator');
+        const navigatorPanel = document.getElementById('question-navigator');
+        
+        // Limpiar el grid
+        questionGrid.innerHTML = '';
+        
+        // Generar indicadores para cada pregunta
+        currentQuestions.forEach((question, index) => {
+            const indicator = document.createElement('div');
+            indicator.className = 'question-indicator unanswered';
+            indicator.dataset.questionId = question.id;
+            indicator.dataset.index = index;
+            
+            // Si ya hay respuesta, marcarla como respondida
+            if (userAnswers[question.id]) {
+                indicator.classList.remove('unanswered');
+                indicator.classList.add('answered');
+            }
+            
+            indicator.innerHTML = `
+                <div class="question-number">${index + 1}</div>
+            `;
+            
+            // Evento para saltar a esa pregunta
+            indicator.addEventListener('click', function() {
+                const questionCard = document.querySelector(`.question-card[data-id="${question.id}"]`);
+                if (questionCard) {
+                    // Remover clase current de todos los indicadores
+                    document.querySelectorAll('.question-indicator').forEach(ind => {
+                        ind.classList.remove('current');
+                    });
+                    
+                    // Añadir clase current a este indicador
+                    this.classList.add('current');
+                    
+                    // Scroll a la pregunta
+                    questionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+            
+            questionGrid.appendChild(indicator);
+        });
+        
+        // Mostrar el navegador de preguntas y el botón de toggle
+        navigatorPanel.style.display = 'block';
+        toggleNavigator.style.display = 'flex';
+        
+        // Abrir/cerrar el navegador
+        toggleNavigator.addEventListener('click', function() {
+            if (navigatorPanel.style.display === 'none' || navigatorPanel.style.display === '') {
+                navigatorPanel.style.display = 'block';
+            } else {
+                navigatorPanel.style.display = 'none';
+            }
+        });
+    }
+
+    // Simplificar la función para actualizar el estado
+    function updateQuestionStatus(questionId, isAnswered) {
+        const indicator = document.querySelector(`.question-indicator[data-question-id="${questionId}"]`);
+        if (indicator) {
+            if (isAnswered) {
+                indicator.classList.remove('unanswered');
+                indicator.classList.add('answered');
+            } else {
+                indicator.classList.remove('answered');
+                indicator.classList.add('unanswered');
+            }
+        }
+    }
+
+    // Corregir la función de generación de preguntas - busca la parte donde se crean las opciones de respuesta
+    function createQuizQuestions(questions) {
+        // El código existente para limpiar el contenedor de preguntas
+        questionsContainer.innerHTML = '';
+        userAnswers = {};
+        currentQuestions = questions;
+        
+        // Template para pregunta
+        const questionTemplate = document.getElementById('question-template');
+        
+        // Generar preguntas
+        questions.forEach((question, index) => {
+            // Clonar la plantilla
+            const questionCard = questionTemplate.content.cloneNode(true);
+            
+            // Configurar la pregunta
+            const card = questionCard.querySelector('.question-card');
+            card.dataset.id = question.id;
+            
+            // Establecer texto de la pregunta
+            const questionText = questionCard.querySelector('.question-text');
+            questionText.textContent = `Pregunta ${index + 1}: ${question.question_text}`;
+            
+            // Contenedor de respuestas
+            const answersContainer = questionCard.querySelector('.answers-container');
+            
+            // Crear opciones de respuesta
+            question.answers.forEach(answer => {
+                const answerOption = document.createElement('div');
+                answerOption.className = 'answer-option';
+                answerOption.dataset.answer = answer;
+                answerOption.textContent = answer;
+                
+                // Manejar clic en la opción
+                answerOption.addEventListener('click', function() {
+                    // Remover selección anterior
+                    answersContainer.querySelectorAll('.answer-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Seleccionar esta opción
+                    this.classList.add('selected');
+                    
+                    // Guardar respuesta
+                    userAnswers[question.id] = answer;
+                    
+                    // Actualizar el estado en el navegador
+                    updateQuestionStatus(question.id, true);
+                });
+                
+                answersContainer.appendChild(answerOption);
+            });
+            
+            // Añadir la pregunta al contenedor
+            questionsContainer.appendChild(questionCard);
+        });
+        
+        // Inicializar el navegador de preguntas
+        initQuestionNavigator();
     }
 }); 
