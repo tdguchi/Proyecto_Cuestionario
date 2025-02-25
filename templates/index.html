@@ -266,6 +266,46 @@
                 observer.observe(resultsContent, { childList: true, subtree: true });
             }
         });
+
+        // Generador de ID de sesión para aislar los cuestionarios entre diferentes usuarios
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si ya existe un ID de sesión
+            let sessionId = localStorage.getItem('quizapp_session_id');
+            
+            // Si no existe, crear uno nuevo
+            if (!sessionId) {
+                sessionId = generateUniqueId();
+                localStorage.setItem('quizapp_session_id', sessionId);
+            }
+            
+            // Función para generar un ID único
+            function generateUniqueId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            // Añadir el ID de sesión a todas las peticiones fetch
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options = {}) {
+                // Preparar opciones si no existen
+                options = options || {};
+                options.headers = options.headers || {};
+                
+                // Convertir headers a objeto si es una instancia de Headers
+                if (options.headers instanceof Headers) {
+                    const headersObj = {};
+                    for (const [key, value] of options.headers.entries()) {
+                        headersObj[key] = value;
+                    }
+                    options.headers = headersObj;
+                }
+                
+                // Añadir el ID de sesión como header
+                options.headers['X-Session-ID'] = sessionId;
+                
+                // Llamar al fetch original
+                return originalFetch(url, options);
+            };
+        });
     </script>
 </body>
 </html> 

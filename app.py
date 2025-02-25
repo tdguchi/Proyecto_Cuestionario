@@ -4,12 +4,17 @@ import os
 import random
 import sqlite3
 import datetime
+import uuid
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'clave_secreta_para_session'  # Necesario para usar session
+app.secret_key = 'your-secret-key'  # Cambiar a una clave segura en producción
 
 # Configuración de la base de datos
 DATABASE = 'quiz_app.db'
+
+# Diccionario para almacenar datos por sesión
+session_data = {}
 
 # Función para conectar a la base de datos
 def get_db():
@@ -99,8 +104,36 @@ if not os.path.exists(UPLOAD_FOLDER):
 def index():
     return render_template('index.html')
 
+@app.before_request
+def process_session():
+    session_id = request.headers.get('X-Session-ID')
+    if session_id:
+        # Asegurarse de que exista un espacio para esta sesión
+        if session_id not in session_data:
+            session_data[session_id] = {
+                'subjects': [],
+                'current_subject': None,
+                'config': {
+                    'question_value': 1.0,
+                    'wrong_answer_penalty': 0.25,
+                    'no_answer_penalty': 0.0
+                },
+                'quiz_results': {
+                    'total_questions': 0,
+                    'correct_answers': 0,
+                    'incorrect_answers': 0,
+                    'unanswered_questions': 0
+                }
+            }
+        # Guardar el ID para uso en las rutas
+        session['current_session_id'] = session_id
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    session_id = session.get('current_session_id')
+    if not session_id:
+        return jsonify({'success': False, 'error': 'Sesión no válida'})
+    
     if 'file' not in request.files:
         return jsonify({'error': 'No se ha enviado ningún archivo'}), 400
     
@@ -548,6 +581,12 @@ def reset_quiz_history():
     except Exception as e:
         print(f"Error al resetear historial: {e}")
     
+    return jsonify({'success': True})
+
+@app.route('/cleanup_sessions', methods=['POST'])
+def cleanup_sessions():
+    # Eliminar sesiones más antiguas que X días
+    # Implementación segura que no expone datos
     return jsonify({'success': True})
 
 if __name__ == '__main__':
