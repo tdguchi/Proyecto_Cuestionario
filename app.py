@@ -4,7 +4,6 @@ import os
 import random
 import sqlite3
 import datetime
-import uuid
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -12,9 +11,6 @@ app.secret_key = 'your-secret-key'  # Cambiar a una clave segura en producción
 
 # Configuración de la base de datos
 DATABASE = 'quiz_app.db'
-
-# Diccionario para almacenar datos por sesión
-session_data = {}
 
 # Función para conectar a la base de datos
 def get_db():
@@ -104,36 +100,8 @@ if not os.path.exists(UPLOAD_FOLDER):
 def index():
     return render_template('index.html')
 
-@app.before_request
-def process_session():
-    session_id = request.headers.get('X-Session-ID')
-    if session_id:
-        # Asegurarse de que exista un espacio para esta sesión
-        if session_id not in session_data:
-            session_data[session_id] = {
-                'subjects': [],
-                'current_subject': None,
-                'config': {
-                    'question_value': 1.0,
-                    'wrong_answer_penalty': 0.25,
-                    'no_answer_penalty': 0.0
-                },
-                'quiz_results': {
-                    'total_questions': 0,
-                    'correct_answers': 0,
-                    'incorrect_answers': 0,
-                    'unanswered_questions': 0
-                }
-            }
-        # Guardar el ID para uso en las rutas
-        session['current_session_id'] = session_id
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    session_id = session.get('current_session_id')
-    if not session_id:
-        return jsonify({'success': False, 'error': 'Sesión no válida'})
-    
     if 'file' not in request.files:
         return jsonify({'error': 'No se ha enviado ningún archivo'}), 400
     
@@ -187,16 +155,11 @@ def upload_file():
             conn.commit()
             conn.close()
             
-            # Guardar ID de asignatura en la sesión
-            session['subject_id'] = subject_id
-            
             return jsonify({
                 'success': True,
                 'asignatura': asignatura,
                 'num_questions': questions_count
             })
-        except json.JSONDecodeError:
-            return jsonify({'error': 'El archivo no es un JSON válido'}), 400
         except Exception as e:
             return jsonify({'error': f'Error al procesar el archivo: {str(e)}'}), 500
     else:
@@ -206,7 +169,7 @@ def upload_file():
 def get_subjects():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT id, name FROM subjects')
+    cursor.execute('SELECT id, name FROM subjects ORDER BY name')
     subjects = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
     conn.close()
     
@@ -219,9 +182,6 @@ def select_subject():
     
     if not subject_id:
         return jsonify({'error': 'No se ha seleccionado ninguna asignatura'}), 400
-    
-    # Guardar en la sesión
-    session['subject_id'] = subject_id
     
     conn = get_db()
     cursor = conn.cursor()
