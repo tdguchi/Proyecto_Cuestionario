@@ -1,0 +1,25 @@
+{
+  "asignatura": "Deonto",
+  "questions": [
+    {
+      "question": "¿Cuál de las siguientes definiciones se corresponde con la de derecho informático?",
+      "answers": [
+        "El uso de la informática en el ámbito jurídico.",
+        "Las implicaciones tecnológicas en una sociedad organizada.",
+        "La rama del derecho que regula aspectos en los que las tecnologías de la información tienen un componente esencial.",
+        "Todas las anteriores son correctas."
+      ],
+      "correct_answer": "La rama del derecho que regula aspectos en los que las tecnologías de la información tienen un componente esencial."
+    },
+    {
+      "question": "¿Qué es la informática jurídica?",
+      "answers": [
+        "La rama del derecho que regula aspectos en los que las tecnologías de la información tienen un componente esencial.",
+        "El uso de la informática en el ámbito jurídico.",
+        "Las implicaciones tecnológicas en una sociedad organizada.",
+        "Ninguna de las anteriores es correcta."
+      ],
+      "correct_answer": "El uso de la informática en el ámbito jurídico."
+    }
+  ]
+} 
