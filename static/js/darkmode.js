@@ -1,34 +1,51 @@
+// Archivo vacío - toda la funcionalidad del modo oscuro ha sido eliminada 
+
 document.addEventListener('DOMContentLoaded', function() {
-    const toggleSwitch = document.querySelector('#checkbox');
-    const currentTheme = localStorage.getItem('theme');
+    const themeSwitch = document.getElementById('themeSwitch');
+    const htmlElement = document.documentElement;
     
-    // Verificar si hay un tema guardado en localStorage
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        
-        if (currentTheme === 'dark') {
-            toggleSwitch.checked = true;
-        }
-    } else {
-        // Detectar preferencia del sistema
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            toggleSwitch.checked = true;
-            localStorage.setItem('theme', 'dark');
-        }
+    // Aplicar tema oscuro
+    function applyDarkTheme() {
+        htmlElement.setAttribute('data-bs-theme', 'dark');
+        document.body.style.backgroundColor = '#121212';
+        document.body.classList.add('dark-mode');
+        themeSwitch.checked = true;
+        console.log('Modo oscuro activado');
     }
     
-    // Función para cambiar el tema
-    function switchTheme(e) {
-        if (e.target.checked) {
-            document.documentElement.setAttribute('data-theme', 'dark');
+    // Aplicar tema claro
+    function applyLightTheme() {
+        htmlElement.setAttribute('data-bs-theme', 'light');
+        document.body.style.backgroundColor = '';
+        document.body.classList.remove('dark-mode');
+        themeSwitch.checked = false;
+        console.log('Modo claro activado');
+    }
+    
+    // Verificar preferencia guardada o del sistema
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        applyDarkTheme();
+    } else {
+        applyLightTheme();
+    }
+    
+    // Cambiar tema al activar/desactivar el interruptor
+    themeSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            applyDarkTheme();
             localStorage.setItem('theme', 'dark');
         } else {
-            document.documentElement.setAttribute('data-theme', 'light');
+            applyLightTheme();
             localStorage.setItem('theme', 'light');
-        }    
-    }
+        }
+    });
     
-    // Evento para escuchar cambios en el interruptor
-    toggleSwitch.addEventListener('change', switchTheme, false);
+    // Forzar la aplicación inmediata de estilos
+    setTimeout(function() {
+        if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+            document.body.style.backgroundColor = '#121212';
+        }
+    }, 50);
 }); 

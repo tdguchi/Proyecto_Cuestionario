@@ -16,45 +16,12 @@
     --footer-bg: #f8f9fa;
     --footer-color: #6c757d;
     --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --app-header-gradient-light: linear-gradient(135deg, #4361ee, #3f37c9);
+    --app-header-gradient-dark: linear-gradient(135deg, #374d9e, #2b2973);
+    --card-hover-shadow-light: 0 10px 20px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow-dark: 0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Variables de colores para modo oscuro */
-[data-theme="dark"] {
-    --primary-color: #6d83f2;
-    --secondary-color: #564edb;
-    --success-color: #60d4ff;
-    --danger-color: #ff5c9e;
-    --warning-color: #ffaa45;
-    --info-color: #67a7ff;
-    --light-color: #343a40;
-    --dark-color: #f8f9fa;
-    --body-bg: #121212;
-    --card-bg: #1e1e1e;
-    --text-color: #e9ecef;
-    --border-color: #495057;
-    --header-gradient: linear-gradient(135deg, #4c5eba, #35307a);
-    --footer-bg: #1e1e1e;
-    --footer-color: #adb5bd;
-    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
-    
-    /* Nuevos colores para mejorar el contraste */
-    --muted-text: #adb5bd;
-    --stats-card-bg: #2c2c2c;
-    --option-hover-bg: #2a2a2a;
-    --selected-option-bg: #2d3b48;
-    --selected-option-border: #4d6d8c;
-    --correct-bg: #1e3b28;
-    --correct-border: #2b8a3e;
-    --correct-text: #63e6be;
-    --incorrect-bg: #3b1e1e;
-    --incorrect-border: #c92a2a;
-    --incorrect-text: #ff8787;
-    --not-selected-bg: #1e2a3b;
-    --not-selected-border: #1971c2;
-    --not-selected-text: #74c0fc;
-}
-
-/* Transición suave entre modos */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--body-bg);
@@ -70,12 +37,12 @@ body {
 }
 
 .app-header {
-    background: var(--header-gradient);
+    background: var(--app-header-gradient-light);
     color: white;
     padding: 2rem 0;
     text-align: center;
     margin-bottom: 2rem;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .app-title {
@@ -108,12 +75,12 @@ body {
     border: none;
     border-radius: 0.5rem;
     overflow: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: none;
+    box-shadow: var(--card-shadow);
 }
 
 .card-header {
@@ -157,8 +124,10 @@ body {
 }
 
 .answer-option:hover {
-    background-color: #f8f9fa;
-    border-color: #dee2e6;
+    background-color: #f0f4f8;
+    border-color: #adb5bd;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
 }
 
 .answer-option.selected {
@@ -244,79 +213,7 @@ body {
 
 /* Estilos para el interruptor de modo oscuro */
 .theme-switch-wrapper {
-    display: flex;
-    align-items: center;
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 100;
-}
-
-.theme-switch {
-    display: inline-block;
-    height: 34px;
-    position: relative;
-    width: 60px;
-}
-
-.theme-switch input {
     display: none;
-}
-
-.slider {
-    background-color: #ccc;
-    bottom: 0;
-    cursor: pointer;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    transition: .4s;
-    border-radius: 34px;
-}
-
-.slider:before {
-    background-color: white;
-    bottom: 4px;
-    content: "";
-    height: 26px;
-    left: 4px;
-    position: absolute;
-    transition: .4s;
-    width: 26px;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--primary-color);
-}
-
-input:checked + .slider:before {
-    transform: translateX(26px);
-}
-
-.slider .icon {
-    color: #fff;
-    position: absolute;
-    top: 8px;
-}
-
-.slider .icon-sun {
-    right: 10px;
-    opacity: 1;
-}
-
-.slider .icon-moon {
-    left: 10px;
-    opacity: 0;
-}
-
-input:checked + .slider .icon-sun {
-    opacity: 0;
-}
-
-input:checked + .slider .icon-moon {
-    opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -419,4 +316,581 @@ input:checked + .slider .icon-moon {
 [data-theme="dark"] .btn-outline-success:hover {
     background-color: var(--success-color);
     color: #000;
+}
+
+/* Ajustes adicionales para elementos de puntuación en modo oscuro */
+[data-theme="dark"] .score-card ul,
+[data-theme="dark"] .score-card li,
+[data-theme="dark"] .score-card span,
+[data-theme="dark"] .score-card p {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] #score {
+    color: var(--success-color);
+}
+
+[data-theme="dark"] .score-card .small.text-muted {
+    color: var(--muted-text) !important;
+}
+
+[data-theme="dark"] .score-card .small.text-muted ul li {
+    color: var(--muted-text) !important;
+}
+
+[data-theme="dark"] .score-card .small.text-muted ul li span {
+    color: var(--text-color) !important;
+    font-weight: 600;
+}
+
+/* Corrección para la puntuación destacada */
+[data-theme="dark"] .score-display {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: var(--success-color);
+}
+
+/* Eliminar todas las reglas conflictivas de form-floating anterior */
+[data-theme="dark"] .form-floating,
+[data-theme="dark"] .form-floating > label,
+[data-theme="dark"] .form-floating > .form-control,
+[data-theme="dark"] .form-floating > .form-select,
+[data-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-theme="dark"] .form-floating > .form-select ~ label,
+[data-theme="dark"] .form-floating > label::after,
+[data-theme="dark"] .form-floating label.floating {
+    /* Restaurar todos los valores de posicionamiento a sus valores por defecto */
+    position: relative;
+    transform: none;
+    padding: initial;
+    height: initial;
+    border-radius: initial;
+    box-shadow: none;
+    background: none;
+}
+
+/* Solución simple: sólo ajustar colores en modo oscuro */
+[data-theme="dark"] .form-floating > .form-control,
+[data-theme="dark"] .form-floating > .form-select {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-floating > label {
+    color: var(--text-color);
+}
+
+/* Aplicar color a etiquetas flotantes cuando están activas */
+[data-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-theme="dark"] .form-floating > .form-select ~ label {
+    color: var(--primary-color);
+}
+
+/* Remover el fondo blanco del elemento after en modo oscuro */
+[data-theme="dark"] .form-floating > .form-control ~ label::after,
+[data-theme="dark"] .form-floating > .form-select ~ label::after {
+    background-color: var(--card-bg);
+}
+
+/* Agregar un evento JS para gestionar manualmente estas etiquetas */
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] input:-webkit-autofill:hover, 
+[data-theme="dark"] input:-webkit-autofill:focus,
+[data-theme="dark"] input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--card-bg) inset !important;
+    -webkit-text-fill-color: var(--text-color) !important;
+}
+
+/* Mejoras para el modo oscuro nativo de Bootstrap */
+[data-bs-theme="dark"] .app-header {
+    background: var(--app-header-gradient-dark);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control ~ label::after,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label::after {
+    background-color: var(--bs-dark-bg-subtle);
+}
+
+[data-bs-theme="dark"] .theme-switch-wrapper label {
+    color: var(--bs-light);
+}
+
+/* Ajustes para la puntuación y estadísticas */
+[data-bs-theme="dark"] .stats-card, 
+[data-bs-theme="dark"] .score-card {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .score-display {
+    color: var(--bs-info);
+}
+
+/* Eliminar estilos antiguos de modo oscuro con [data-theme="dark"] */
+/* Reemplazar con los selectores correctos para Bootstrap 5.3.3 */
+
+/* Ocultar los estilos antiguos de modo oscuro */
+[data-theme="dark"] {
+    display: none !important;
+}
+
+/* Asegurar que el contenedor del interruptor sea visible */
+.theme-switch-wrapper {
+    display: flex !important;
+}
+
+/* Mejoras adicionales para el modo oscuro nativo de Bootstrap */
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+}
+
+[data-bs-theme="dark"] .answer-option {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .answer-option:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+[data-bs-theme="dark"] .answer-option.selected {
+    background-color: rgba(13, 110, 253, 0.15);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .answer-option.correct {
+    background-color: rgba(25, 135, 84, 0.15);
+    border-color: var(--bs-success);
+    color: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .answer-option.incorrect {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .answer-option.not-selected {
+    background-color: rgba(13, 202, 240, 0.15);
+    border-color: var(--bs-info);
+    color: var(--bs-info);
+}
+
+/* Asegurar que las etiquetas flotantes sean legibles */
+[data-bs-theme="dark"] .form-floating > .form-control ~ label::after {
+    background-color: var(--bs-dark-bg-subtle);
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label {
+    color: var(--bs-primary);
+    opacity: 1;
+}
+
+/* Transiciones suaves */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card, .answer-option, .form-control, .form-select, .btn {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Estilos de cabecera para ambos modos */
+.app-header {
+    background: var(--app-header-gradient-light);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] .app-header {
+    background: var(--app-header-gradient-dark);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Tarjetas y contenedores principales */
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    transform: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="dark"] .card-header {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Opciones de respuesta */
+[data-bs-theme="dark"] .answer-option {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .answer-option:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+/* Estados de las opciones de respuesta */
+[data-bs-theme="dark"] .answer-option.selected {
+    background-color: rgba(13, 110, 253, 0.15);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .answer-option.correct {
+    background-color: rgba(25, 135, 84, 0.15);
+    border-color: var(--bs-success);
+    color: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .answer-option.incorrect {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .answer-option.not-selected {
+    background-color: rgba(13, 202, 240, 0.15);
+    border-color: var(--bs-info);
+    color: var(--bs-info);
+}
+
+/* Formularios y campos */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Etiquetas flotantes */
+[data-bs-theme="dark"] .form-floating > .form-control ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control ~ label::after,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label::after {
+    background-color: var(--bs-dark-bg-subtle);
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label {
+    color: var(--bs-primary);
+    opacity: 1;
+}
+
+/* Estadísticas y puntuaciones */
+[data-bs-theme="dark"] .stats-card, 
+[data-bs-theme="dark"] .score-card {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .score-display {
+    color: var(--bs-info);
+}
+
+[data-bs-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .small.text-muted {
+    color: var(--bs-secondary-color) !important;
+}
+
+/* Tabs y navegación */
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+    color: var(--bs-primary);
+    background-color: var(--bs-dark-bg-subtle);
+    border-color: var(--bs-border-color-translucent);
+    border-bottom-color: var(--bs-primary);
+}
+
+/* Footer */
+[data-bs-theme="dark"] .app-footer {
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-secondary-color);
+}
+
+/* Auto-completado en campos de formulario */
+[data-bs-theme="dark"] input:-webkit-autofill,
+[data-bs-theme="dark"] input:-webkit-autofill:hover, 
+[data-bs-theme="dark"] input:-webkit-autofill:focus,
+[data-bs-theme="dark"] input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--bs-dark-bg-subtle) inset !important;
+    -webkit-text-fill-color: var(--bs-body-color) !important;
+}
+
+/* Asegurar que el interruptor de tema sea visible */
+.theme-switch-wrapper {
+    display: flex !important;
+    align-items: center;
+    z-index: 1030;
+}
+
+[data-bs-theme="dark"] .theme-switch-wrapper .form-check-label {
+    color: var(--bs-body-color);
+}
+
+/* Asegurar que el fondo principal sea oscuro */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #121212 !important;
+    --bs-body-color: #e9ecef !important;
+    --bs-tertiary-bg: #2b2b2b !important;
+    --bs-secondary-bg: #1e1e1e !important;
+    --bs-border-color: #444 !important;
+    --bs-card-bg: #1e1e1e !important;
+    --bs-dark-bg-subtle: #272727 !important;
+}
+
+/* Forzar el fondo oscuro */
+[data-bs-theme="dark"] body {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Aplicar estilos específicos para la cabecera */
+[data-bs-theme="dark"] .app-header {
+    background: linear-gradient(135deg, #374d9e, #2b2973) !important;
+    color: #ffffff !important;
+}
+
+/* Tarjetas en modo oscuro */
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-card-bg) !important;
+    border-color: var(--bs-border-color) !important;
+}
+
+[data-bs-theme="dark"] .card-header {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border-bottom-color: var(--bs-border-color) !important;
+}
+
+/* Formularios en modo oscuro */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--bs-dark-bg-subtle) !important;
+    border-color: var(--bs-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Footer en modo oscuro */
+[data-bs-theme="dark"] .app-footer {
+    background-color: var(--bs-tertiary-bg) !important;
+    color: #adb5bd !important;
+}
+
+/* Corrección específica para las etiquetas flotantes */
+[data-bs-theme="dark"] .form-floating > .form-control ~ label::after,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label::after {
+    background-color: var(--bs-dark-bg-subtle) !important;
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--bs-primary) !important;
+    background-color: transparent !important;
+}
+
+/* Contraste mejorado para opciones de respuestas */
+[data-bs-theme="dark"] .answer-option {
+    background-color: var(--bs-dark-bg-subtle) !important;
+    border-color: var(--bs-border-color) !important;
+}
+
+/* Mejoras para textos específicos en modo oscuro */
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+    color: #adb5bd !important; /* Color más claro para los enlaces inactivos */
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+    color: #6ea8fe !important; /* Azul más brillante para enlaces activos */
+    border-bottom-color: #6ea8fe !important;
+}
+
+/* Textos de etiquetas y configuración */
+[data-bs-theme="dark"] label,
+[data-bs-theme="dark"] .form-label,
+[data-bs-theme="dark"] .form-check-label {
+    color: #e9ecef !important; /* Asegurar que las etiquetas sean legibles */
+}
+
+/* Inputs con autocompletado */
+[data-bs-theme="dark"] input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #2b2b2b inset !important;
+    -webkit-text-fill-color: #e9ecef !important;
+}
+
+/* Mejorar colores de los enlaces en modo oscuro */
+[data-bs-theme="dark"] a:not(.btn) {
+    color: #6ea8fe !important;
+}
+
+[data-bs-theme="dark"] a:hover:not(.btn) {
+    color: #9ec5fe !important;
+}
+
+/* Mejorar colores para encabezados */
+[data-bs-theme="dark"] h1, 
+[data-bs-theme="dark"] h2, 
+[data-bs-theme="dark"] h3, 
+[data-bs-theme="dark"] h4, 
+[data-bs-theme="dark"] h5, 
+[data-bs-theme="dark"] h6,
+[data-bs-theme="dark"] .h1, 
+[data-bs-theme="dark"] .h2, 
+[data-bs-theme="dark"] .h3, 
+[data-bs-theme="dark"] .h4, 
+[data-bs-theme="dark"] .h5, 
+[data-bs-theme="dark"] .h6 {
+    color: #f8f9fa !important;
+}
+
+/* Texto para los inputs de puntuación */
+[data-bs-theme="dark"] .form-floating > .form-control ~ label {
+    color: #adb5bd !important;
+}
+
+/* Colores para textos de etiquetas en azul */
+[data-bs-theme="dark"] .text-primary {
+    color: #6ea8fe !important;
+}
+
+/* Ajustes para los números en la puntuación */
+[data-bs-theme="dark"] input[type="number"] {
+    color: #e9ecef !important;
+}
+
+/* Selector específico para textos azules y etiquetas informativas */
+[data-bs-theme="dark"] [class*="text-"] {
+    color: inherit;
+}
+
+/* Colores para textos en botones */
+[data-bs-theme="dark"] .btn {
+    color: #f8f9fa;
+}
+
+/* Estilos para animaciones y efectos de feedback en modo oscuro */
+[data-bs-theme="dark"] .feedback {
+    background-color: var(--bs-dark-bg-subtle) !important;
+    border: 1px solid var(--bs-border-color) !important;
+    color: var(--bs-body-color) !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-bs-theme="dark"] .feedback.correct {
+    background-color: rgba(25, 135, 84, 0.15) !important;
+    border-color: var(--bs-success) !important;
+    color: #75b798 !important; /* Color más claro para mejor contraste */
+}
+
+[data-bs-theme="dark"] .feedback.incorrect {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border-color: var(--bs-danger) !important;
+    color: #ea868f !important; /* Color más claro para mejor contraste */
+}
+
+/* Mejorar la visibilidad de las animaciones */
+[data-bs-theme="dark"] .answer-option {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease !important;
+}
+
+/* Animación para respuestas correctas */
+@keyframes correctPulse {
+    0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.3); }
+    70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+}
+
+/* Animación para respuestas incorrectas */
+@keyframes incorrectShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Aplicar animaciones a estados específicos */
+[data-bs-theme="dark"] .answer-option.correct {
+    animation: correctPulse 1.5s ease-in-out !important;
+    transform: translateY(-2px) !important;
+}
+
+[data-bs-theme="dark"] .answer-option.incorrect {
+    animation: incorrectShake 0.5s ease-in-out !important;
+}
+
+/* Asegurar visibilidad de iconos en las respuestas */
+[data-bs-theme="dark"] .answer-option.correct i,
+[data-bs-theme="dark"] .answer-option.incorrect i,
+[data-bs-theme="dark"] .answer-option.not-selected i {
+    opacity: 1 !important;
+    color: inherit !important;
+}
+
+/* Mejorar transiciones para botones relacionados con la verificación */
+[data-bs-theme="dark"] #submit-quiz,
+[data-bs-theme="dark"] #new-quiz,
+[data-bs-theme="dark"] #restart-quiz {
+    transition: all 0.3s ease !important;
+}
+
+[data-bs-theme="dark"] #submit-quiz:hover,
+[data-bs-theme="dark"] #new-quiz:hover,
+[data-bs-theme="dark"] #restart-quiz:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Mejorar el efecto hover para las opciones de respuesta en modo claro */
+.answer-option:hover {
+    background-color: #f0f4f8;
+    border-color: #adb5bd;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* Mejorar el efecto hover para las opciones de respuesta en modo oscuro */
+[data-bs-theme="dark"] .answer-option:hover {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+/* Asegurar que el hover no afecta a opciones ya verificadas */
+.answer-option.correct:hover,
+.answer-option.incorrect:hover,
+.answer-option.not-selected:hover,
+[data-bs-theme="dark"] .answer-option.correct:hover,
+[data-bs-theme="dark"] .answer-option.incorrect:hover,
+[data-bs-theme="dark"] .answer-option.not-selected:hover {
+    /* Mantener los estilos originales para estados verificados */
+    box-shadow: none;
+    border-width: 2px;
 } 

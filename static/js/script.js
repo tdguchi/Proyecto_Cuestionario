@@ -432,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('correct-answers').textContent = stats.correct_answers;
                         document.getElementById('incorrect-answers').textContent = stats.incorrect_answers;
                         document.getElementById('unanswered-questions').textContent = stats.unanswered_questions;
-                        document.getElementById('score').textContent = stats.score.toFixed(2);
+                        document.getElementById('score').textContent = calculateScore(stats.correct_answers, stats.incorrect_answers, stats.unanswered_questions);
                         
                         // Mostrar configuración aplicada
                         document.getElementById('config-question-value').textContent = stats.config.question_value;
@@ -457,4 +457,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Volver a la pestaña de configuración
         setupTabInstance.show();
     });
+    
+    // Modificar la función que calcula la puntuación final
+    function calculateScore(correct, incorrect, unanswered) {
+        const questionValue = parseFloat(document.getElementById('question-value').value) || 1.0;
+        const wrongPenalty = parseFloat(document.getElementById('wrong-answer-penalty').value) || 0.25;
+        const noAnswerPenalty = parseFloat(document.getElementById('no-answer-penalty').value) || 0.0;
+        
+        let score = (correct * questionValue) - (incorrect * wrongPenalty) - (unanswered * noAnswerPenalty);
+        
+        // Asegurar que la puntuación no sea negativa
+        return Math.max(0, score).toFixed(2);
+    }
 }); 
